@@ -1,0 +1,45 @@
+name: Release
+
+# Publishes a Foundry module release whenever a version tag (vX.Y.Z) is pushed.
+# It stamps the tag's version and the matching download URL into module.json,
+# zips the module, and creates the GitHub Release with module.json + module.zip.
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: version
+        run: echo "number=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Stamp version and download URL into module.json
+        run: |
+          jq \
+            --arg v "${{ steps.version.outputs.number }}" \
+            --arg dl "https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/module.zip" \
+            '.version = $v | .download = $dl' module.json > module.tmp.json
+          mv module.tmp.json module.json
+          echo "module.json version is now: $(jq -r .version module.json)"
+
+      - name: Build module.zip
+        run: zip -r module.zip module.json scripts styles lang README.md LICENSE
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Quick Walls ${{ steps.version.outputs.number }}
+          files: |
+            module.json
+            module.zip
+          generate_release_notes: true
