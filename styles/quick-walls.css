@@ -1,0 +1,75 @@
+#quick-walls-panel {
+  position: fixed;
+  top: 120px;
+  left: 120px;
+  z-index: 70;
+  width: 172px;
+  background: #1b1f29;
+  border: 1px solid #3a4a66;
+  border-radius: 6px;
+  color: #d7e2f2;
+  font-family: var(--font-primary, sans-serif);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+  user-select: none;
+}
+
+#quick-walls-panel .qw-head {
+  padding: 6px 9px;
+  background: #222838;
+  border-bottom: 1px solid #3a4a66;
+  cursor: move;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 6px 6px 0 0;
+}
+
+#quick-walls-panel .qw-head .qw-x {
+  margin-left: auto;
+  cursor: pointer;
+  color: #e08a8a;
+  padding: 0 4px;
+}
+
+#quick-walls-panel .qw-body {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 8px;
+}
+
+#quick-walls-panel button {
+  background: #222838;
+  color: #d7e2f2;
+  border: 1px solid #3a4a66;
+  border-radius: 4px;
+  padding: 6px 9px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+#quick-walls-panel button:hover {
+  background: #2c3650;
+}
+
+#quick-walls-panel button.active {
+  background: #3a5a9a;
+  color: #fff;
+  border-color: #6f9fe0;
+}
+
+#quick-walls-panel button.qw-build {
+  margin-top: 4px;
+  background: #1e3a24;
+  border-color: #2e6a3a;
+  color: #9fe0ad;
+}
+
+#quick-walls-panel button.qw-build:hover {
+  background: #2a5a34;
+}
