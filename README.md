@@ -37,19 +37,23 @@ Then enable **Quick Walls** in your world's module settings.
 
 1. Open the **Walls** controls in the left toolbar and click the **Quick Walls**
    button (trowel icon). A small floating panel opens.
-
-   ![The Quick Walls panel](docs/images/panel.png)
-
 2. **Building** — drag a rectangle over each (square) building.
 3. **Door** — drag a short line along a wall where a door goes. The line is
    auto-colored red; you never touch the color picker.
 4. **Window** — drag a short line for each window (auto-colored blue).
-
-   ![Guides drawn over a map](docs/images/before.webp)
-
 5. **Build Walls** — review the counts, confirm, done.
 
-   ![Walls built from the guides](docs/images/after.webp)
+**The panel:**
+
+![The Quick Walls panel](docs/images/panel.png)
+
+**Your guides** — a rectangle for the building, colored lines for the openings:
+
+![A building marked out with guide drawings](docs/images/before.webp)
+
+**The result** after Build Walls:
+
+![Walls built from the guides](docs/images/after.webp)
 
 Each rectangle becomes four walls. Each door line becomes a **working door** with
 a gap left in the wall. Each window line becomes a segment that **blocks movement
