@@ -2,7 +2,7 @@
   "id": "quick-walls",
   "title": "Quick Walls",
   "description": "A floating toolbar for fast map walling. Draw rectangles over buildings and quick lines for doors and windows, then one click turns them into proper walls, working doors, and see-through windows. System-agnostic — works with any game system.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "compatibility": {
     "minimum": "13",
     "verified": "14"

@@ -11,7 +11,7 @@ system (D&D 5e, PF2e, Pathfinder, a blank world, anything).
 ![License: MIT](https://img.shields.io/badge/License-MIT-green)
 ![Latest Release](https://img.shields.io/github/v/release/KingSideKnight/quick-walls)
 
-![How it works](docs/images/how-it-works.svg)
+![Walls built with Quick Walls](docs/images/after.webp)
 
 ---
 
@@ -45,11 +45,11 @@ Then enable **Quick Walls** in your world's module settings.
    auto-colored red; you never touch the color picker.
 4. **Window** — drag a short line for each window (auto-colored blue).
 
-   ![Guides drawn over a map](docs/images/before.png)
+   ![Guides drawn over a map](docs/images/before.webp)
 
 5. **Build Walls** — review the counts, confirm, done.
 
-   ![Walls built from the guides](docs/images/after.png)
+   ![Walls built from the guides](docs/images/after.webp)
 
 Each rectangle becomes four walls. Each door line becomes a **working door** with
 a gap left in the wall. Each window line becomes a segment that **blocks movement
