@@ -34,19 +34,20 @@ Hooks.once("init", () => {
   });
 });
 
-// Toolbar button in the Drawings controls
+// Toolbar button in the Walls controls
 Hooks.on("getSceneControlButtons", (controls) => {
-  const group = controls.drawings ?? controls.token ?? controls.tokens;
+  const group = controls.walls;
   if (!group?.tools) return;
   group.tools.quickWalls = {
     name: "quickWalls",
     title: "QUICKWALLS.ToggleTitle",
     icon: "fa-solid fa-trowel-bricks",
-    button: true,
+    button: true,          // button tool: fires onChange once on click
     visible: game.user.isGM,
     order: 99,
+    // Only onChange — core also fires a deprecated onClick if present, which
+    // would toggle the panel a second time (open then immediately close).
     onChange: () => QuickWalls.toggle(),
-    onClick: () => QuickWalls.toggle(),
   };
 });
 
