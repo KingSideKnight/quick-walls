@@ -68,4 +68,4 @@ jobs:
             -H "Content-Type: application/json" \
             -H "Authorization: $FOUNDRY_TOKEN" \
             -d "$PAYLOAD"
-          echo "Published $v to the Foundry package registry."
+          echo "Published ${{ steps.version.outputs.number }} to the Foundry package registry."
