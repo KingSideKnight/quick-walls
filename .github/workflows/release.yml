@@ -43,3 +43,29 @@ jobs:
             module.json
             module.zip
           generate_release_notes: true
+
+      # Publishes the release to the Foundry package registry via the Package
+      # Release API. Skips automatically until the FOUNDRY_RELEASE_TOKEN repo
+      # secret (your package's fvttp_ token) is set. The release manifest must
+      # point at the specific versioned module.json, not the latest branch.
+      - name: Publish to Foundry package registry
+        env:
+          FOUNDRY_TOKEN: ${{ secrets.FOUNDRY_RELEASE_TOKEN }}
+        run: |
+          if [ -z "$FOUNDRY_TOKEN" ]; then
+            echo "FOUNDRY_RELEASE_TOKEN not set — skipping Foundry registry publish."
+            exit 0
+          fi
+          PAYLOAD=$(jq -n \
+            --arg id "$(jq -r .id module.json)" \
+            --arg v "${{ steps.version.outputs.number }}" \
+            --arg manifest "https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/module.json" \
+            --arg notes "https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}" \
+            --arg min "$(jq -r .compatibility.minimum module.json)" \
+            --arg verified "$(jq -r .compatibility.verified module.json)" \
+            '{id:$id, release:{version:$v, manifest:$manifest, notes:$notes, compatibility:{minimum:$min, verified:$verified}}}')
+          curl -fsSL -X POST "https://foundryvtt.com/_api/packages/release_version/" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: $FOUNDRY_TOKEN" \
+            -d "$PAYLOAD"
+          echo "Published $v to the Foundry package registry."
