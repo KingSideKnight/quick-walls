@@ -63,6 +63,13 @@ but lets sight and light through**. The guide drawings are cleared afterward.
 > wall it sits on (within about half a grid square), so draw it **along** the
 > wall where the opening should be.
 
+> **Missed an opening?** You can add a door or window to walls that are
+> **already on the scene** — no rectangle needed. Just draw the door/window line
+> along the existing wall and click Build; Quick Walls splits the wall and drops
+> the opening in, keeping the wall's other settings. And if you lay a rectangle
+> over walls that already exist, it **won't duplicate** them — it only fills in
+> the stretches that aren't walled yet.
+
 ## Settings
 
 | Setting | Default | What it does |
@@ -86,7 +93,11 @@ Quick Walls reads the drawings on the active scene:
 - A **rectangle** becomes the four perimeter walls of a building.
 - A **line** on a wall (freehand or polygon, colored as a door or window)
   marks an opening. Quick Walls leaves a gap in the wall there and inserts a
-  real door or a see-through window segment, sized to the line.
+  real door or a see-through window segment, sized to the line. The line can sit
+  on a rectangle edge **or on a wall that already exists** — an existing wall is
+  split in place and its other settings are kept.
+- Where a rectangle edge lands on a wall that is **already there**, Quick Walls
+  skips it, so overlapping guides never pile up duplicate walls.
 
 It then creates the wall documents in one batch. Nothing is placed until you
 confirm the preview.

@@ -129,13 +129,20 @@ export class QuickWalls {
     const t = ((p[0] - a[0]) * abx + (p[1] - a[1]) * aby) / len2;
     return { t, dist: Math.hypot(p[0] - (a[0] + t * abx), p[1] - (a[1] + t * aby)) };
   }
+  // Where does segment p0->p1 lie along edge a->b? Returns the clamped [t0,t1]
+  // interval if it is collinear and within tol, else null. Shared by opening
+  // detection (markers) and duplicate detection (existing walls).
+  static _overlapInterval(a, b, p0, p1, tol) {
+    const q0 = QuickWalls._project(a, b, p0), q1 = QuickWalls._project(a, b, p1);
+    if (q0.dist > tol || q1.dist > tol) return null;
+    const t0 = Math.max(0, Math.min(q0.t, q1.t)), t1 = Math.min(1, Math.max(q0.t, q1.t));
+    return (t1 - t0 > 1e-3) ? { t0, t1 } : null;
+  }
   static _segmentsForEdge(edge, markers, tol) {
     const a = [edge[0], edge[1]], b = [edge[2], edge[3]], openings = [];
     for (const m of markers) {
-      const q0 = QuickWalls._project(a, b, m.p0), q1 = QuickWalls._project(a, b, m.p1);
-      if (q0.dist > tol || q1.dist > tol) continue;
-      const t0 = Math.max(0, Math.min(q0.t, q1.t)), t1 = Math.min(1, Math.max(q0.t, q1.t));
-      if (t1 - t0 > 1e-3) openings.push({ t0, t1, type: m.type });
+      const iv = QuickWalls._overlapInterval(a, b, m.p0, m.p1, tol);
+      if (iv) openings.push({ ...iv, type: m.type });
     }
     openings.sort((x, y) => x.t0 - y.t0);
     const pt = (t) => [a[0] + t * (b[0] - a[0]), a[1] + t * (b[1] - a[1])];
@@ -170,10 +177,45 @@ export class QuickWalls {
     return null;
   }
 
+  // The stretches of candidate segment segC that NO existing collinear wall
+  // already covers — so a rectangle laid over existing walls doesn't duplicate.
+  static _subtractExisting(segC, existing, tol) {
+    const a = [segC[0], segC[1]], b = [segC[2], segC[3]], covered = [];
+    for (const w of existing) {
+      const c = w.c; if (!c || c.length < 4) continue;
+      const iv = QuickWalls._overlapInterval(a, b, [c[0], c[1]], [c[2], c[3]], tol);
+      if (iv) covered.push(iv);
+    }
+    if (!covered.length) return [segC];
+    covered.sort((x, y) => x.t0 - y.t0);
+    const merged = [{ ...covered[0] }];
+    for (let i = 1; i < covered.length; i++) {
+      const last = merged[merged.length - 1], cur = covered[i];
+      if (cur.t0 <= last.t1 + 1e-3) last.t1 = Math.max(last.t1, cur.t1);
+      else merged.push({ ...cur });
+    }
+    const pt = (t) => [a[0] + t * (b[0] - a[0]), a[1] + t * (b[1] - a[1])];
+    const out = []; let cur = 0;
+    for (const iv of merged) {
+      if (iv.t0 > cur + 1e-3) out.push([...pt(cur), ...pt(iv.t0)]);
+      cur = Math.max(cur, iv.t1);
+    }
+    if (cur < 1 - 1e-3) out.push([...pt(cur), ...pt(1)]);
+    return out;
+  }
+  // A plain-object copy of an existing wall's data, re-pointed to new endpoints,
+  // so a split keeps the original wall's sense/door/flags on its solid pieces.
+  static _wallClone(w, c) {
+    const o = (typeof w.toObject === "function") ? w.toObject() : foundry.utils.deepClone(w);
+    delete o._id; delete o.id;
+    o.c = c;
+    return o;
+  }
+
   static async build() {
     const scene = canvas.scene;
     if (!scene) { ui.notifications.error("Quick Walls: no active scene."); return; }
-    const grid = scene.grid.size || 100, tol = grid * 0.6;
+    const grid = scene.grid.size || 100, tol = grid * 0.6, dtol = grid * 0.25;
     const drawings = Array.from(scene.drawings);
     const buildings = [], markers = [];
     for (const d of drawings) {
@@ -184,28 +226,60 @@ export class QuickWalls {
         if (kind) markers.push({ p0: [d.x + p[0], d.y + p[1]], p1: [d.x + p[p.length - 2], d.y + p[p.length - 1]], type: kind, id: d.id });
       }
     }
-    if (!buildings.length) { ui.notifications.warn(game.i18n.localize("QUICKWALLS.NoBuildings")); return; }
+    const existing = Array.from(scene.walls);
+    const wallsToCreate = [], wallsToDelete = [];
+    let doors = 0, wins = 0, cutExisting = 0;
 
-    const walls = []; let doors = 0, wins = 0;
+    // Pass 1 — cut door/window openings into existing walls the lines sit on,
+    // so you can add a missed opening without redrawing the building.
+    if (markers.length) for (const w of existing) {
+      if (!w.c || w.c.length < 4) continue;
+      const segs = QuickWalls._segmentsForEdge(w.c, markers, tol);
+      if (!segs.some(s => s.type !== "solid")) continue; // no opening on this wall
+      wallsToDelete.push(w.id); cutExisting++;
+      for (const s of segs) {
+        if (s.type === "door") doors++; else if (s.type === "window") wins++;
+        const rc = s.c.map(Math.round);
+        wallsToCreate.push(s.type === "solid"
+          ? QuickWalls._wallClone(w, rc)
+          : { c: rc, ...QuickWalls._wallProps(s.type) });
+      }
+    }
+
+    // Pass 2 — turn each rectangle into four walls, skipping any stretch an
+    // existing wall already covers so overlapping draws don't duplicate.
     for (const b of buildings) for (const e of QuickWalls._rectEdges(b.x, b.y, b.w, b.h)) for (const s of QuickWalls._segmentsForEdge(e, markers, tol)) {
-      if (s.type === "door") doors++; if (s.type === "window") wins++;
-      walls.push({ c: s.c.map(Math.round), ...QuickWalls._wallProps(s.type) });
+      const pieces = QuickWalls._subtractExisting(s.c, existing, dtol);
+      if (!pieces.length) continue;
+      if (s.type === "door") doors++; else if (s.type === "window") wins++;
+      for (const c of pieces) wallsToCreate.push({ c: c.map(Math.round), ...QuickWalls._wallProps(s.type) });
+    }
+
+    if (!wallsToCreate.length) {
+      ui.notifications.warn(game.i18n.localize(markers.length ? "QUICKWALLS.NoMatch" : "QUICKWALLS.NoBuildings"));
+      return;
     }
 
     const del = game.settings.get(MODULE, "deleteGuides");
+    const rows = [
+      `<li>${buildings.length} ${game.i18n.localize("QUICKWALLS.Buildings")}</li>`,
+      `<li>${wallsToCreate.length} ${game.i18n.localize("QUICKWALLS.Walls")}</li>`,
+      `<li>${doors} ${game.i18n.localize("QUICKWALLS.Doors")}, ${wins} ${game.i18n.localize("QUICKWALLS.Windows")}</li>`,
+    ];
+    if (cutExisting) rows.push(`<li>${game.i18n.format("QUICKWALLS.ExistingCut", { n: cutExisting })}</li>`);
     const ok = await Dialog.confirm({
       title: game.i18n.localize("QUICKWALLS.Title"),
-      content: `<p><b>${scene.name}</b></p><ul>
-        <li>${buildings.length} ${game.i18n.localize("QUICKWALLS.Buildings")}</li>
-        <li>${walls.length} ${game.i18n.localize("QUICKWALLS.Walls")}</li>
-        <li>${doors} ${game.i18n.localize("QUICKWALLS.Doors")}, ${wins} ${game.i18n.localize("QUICKWALLS.Windows")}</li>
-        </ul><p>${game.i18n.localize(del ? "QUICKWALLS.ConfirmDelete" : "QUICKWALLS.Confirm")}</p>`,
+      content: `<p><b>${scene.name}</b></p><ul>${rows.join("")}</ul><p>${game.i18n.localize(del ? "QUICKWALLS.ConfirmDelete" : "QUICKWALLS.Confirm")}</p>`,
     });
     if (!ok) return;
 
-    await scene.createEmbeddedDocuments("Wall", walls);
-    if (del) await scene.deleteEmbeddedDocuments("Drawing", [...new Set([...buildings.map(b => b.d.id), ...markers.map(m => m.id)])]);
-    ui.notifications.info(game.i18n.format("QUICKWALLS.Done", { walls: walls.length, doors, windows: wins }));
+    await scene.createEmbeddedDocuments("Wall", wallsToCreate);
+    if (wallsToDelete.length) await scene.deleteEmbeddedDocuments("Wall", wallsToDelete);
+    if (del) {
+      const ids = [...new Set([...buildings.map(b => b.d.id), ...markers.map(m => m.id)])];
+      if (ids.length) await scene.deleteEmbeddedDocuments("Drawing", ids);
+    }
+    ui.notifications.info(game.i18n.format("QUICKWALLS.Done", { walls: wallsToCreate.length, doors, windows: wins }));
   }
 }
 

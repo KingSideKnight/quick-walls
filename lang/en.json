@@ -17,6 +17,8 @@
   "QUICKWALLS.Confirm": "Create these walls?",
   "QUICKWALLS.ConfirmDelete": "Create these walls and remove the guide drawings?",
   "QUICKWALLS.NoBuildings": "Quick Walls: no rectangle (building) drawings to wall yet.",
+  "QUICKWALLS.NoMatch": "Quick Walls: no building rectangles, and the door/window lines aren't sitting on any wall to cut.",
+  "QUICKWALLS.ExistingCut": "cut into {n} existing wall(s)",
   "QUICKWALLS.Done": "Quick Walls: built {walls} walls ({doors} doors, {windows} windows).",
   "QUICKWALLS.Settings.DoorColor.Name": "Door line color",
   "QUICKWALLS.Settings.DoorColor.Hint": "The color Quick Walls paints a line to mark a door. Lines of this color become doors.",

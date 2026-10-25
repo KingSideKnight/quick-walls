@@ -2,7 +2,7 @@
   "id": "quick-walls",
   "title": "Quick Walls",
   "description": "A floating toolbar for fast map walling. Draw rectangles over buildings and quick lines for doors and windows, then one click turns them into proper walls, working doors, and see-through windows. System-agnostic — works with any game system.",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "compatibility": {
     "minimum": "13",
     "verified": "14"
@@ -10,22 +10,31 @@
   "authors": [
     {
       "name": "KingSideKnight",
-      "url": "https://github.com/KingSideKnight"
+      "url": "https://github.com/KingSideKnight",
+      "flags": {}
     }
   ],
-  "esmodules": ["scripts/quick-walls.mjs"],
-  "styles": ["styles/quick-walls.css"],
+  "esmodules": [
+    "scripts/quick-walls.mjs"
+  ],
+  "styles": [
+    {
+      "src": "styles/quick-walls.css"
+    }
+  ],
   "languages": [
     {
       "lang": "en",
       "name": "English",
-      "path": "lang/en.json"
+      "path": "lang/en.json",
+      "flags": {}
     }
   ],
   "url": "https://github.com/KingSideKnight/quick-walls",
   "manifest": "https://github.com/KingSideKnight/quick-walls/releases/latest/download/module.json",
-  "download": "https://github.com/KingSideKnight/quick-walls/releases/latest/download/module.zip",
+  "download": "https://github.com/KingSideKnight/quick-walls/releases/download/v1.0.3/module.zip",
   "readme": "https://github.com/KingSideKnight/quick-walls/blob/main/README.md",
   "bugs": "https://github.com/KingSideKnight/quick-walls/issues",
-  "license": "MIT"
+  "license": "MIT",
+  "flags": {}
 }
