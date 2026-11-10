@@ -5,7 +5,7 @@ freehand strokes, add quick lines for doors and windows, drop a mark where a
 light goes, then one click turns it all into proper walls, working doors,
 see-through windows, and ambient lights.
 
-**System-agnostic** — it uses only core Foundry APIs, so it works with any game
+**System-agnostic:** it uses only core Foundry APIs, so it works with any game
 system (D&D 5e, PF2e, Pathfinder, a blank world, anything).
 
 ![Foundry v13–v14](https://img.shields.io/badge/Foundry-v13%E2%80%93v14-informational)
@@ -38,31 +38,31 @@ Then enable **Quick Walls** in your world's module settings.
 
 1. Open the **Walls** controls in the left toolbar and click the **Quick Walls**
    button (trowel icon). A small floating panel opens.
-2. **Building** — drag a rectangle over each square building.
-3. **Round** — drag an oval or circle over a round tower or room. It becomes a
+2. **Building:** drag a rectangle over each square building.
+3. **Round:** drag an oval or circle over a round tower or room. It becomes a
    closed ring of walls.
-4. **Freehand** — trace a curved or irregular wall (a cave edge, a cliff line).
+4. **Freehand:** trace a curved or irregular wall (a cave edge, a cliff line).
    The stroke is smoothed and turned into wall segments that follow your path;
    draw a closed loop and it closes itself.
-5. **Door** — drag a short line along a wall where a door goes. The line is
+5. **Door:** drag a short line along a wall where a door goes. The line is
    auto-colored red; you never touch the color picker.
-6. **Window** — drag a short line for each window (auto-colored blue).
-7. **Light** — click a mark where a light should sit (auto-colored orange). Each
+6. **Window:** drag a short line for each window (auto-colored blue).
+7. **Light:** click a mark where a light should sit (auto-colored orange). Each
    mark becomes an ambient light.
-8. **Wall type** — pick the Foundry wall type *before* you draw it: Normal,
+8. **Wall type:** pick the Foundry wall type *before* you draw it: Normal,
    Terrain, Invisible, or Ethereal. Each type has its own guide color, so you
    can draw some Normal walls, switch the dropdown to Terrain, draw some more,
    and Build gives each stroke the type it was drawn as. Change the dropdown as
    often as you like in one session.
-9. **Build Walls** — review the counts, confirm, done.
+9. **Build Walls:** review the counts, confirm, done.
 
-Every guide is colored by what it is — doors red, windows blue, lights orange,
+Every guide is colored by what it is: doors red, windows blue, lights orange,
 and each wall type its own color (Normal green, Terrain yellow, Invisible
-magenta, Ethereal cyan) — so you can see at a glance what each stroke will
+magenta, Ethereal cyan), so you can see at a glance what each stroke will
 become, and the opening lines always stand out against the walls.
 
 **Clean Up** (the broom button) is a separate, one-click tidy for the whole
-scene — it needs no guides. It finds **zero-length walls** (stray clicks,
+scene. It needs no guides. It finds **zero-length walls** (stray clicks,
 collapsed stubs) and **duplicate/overlapping walls**, shows you the counts, and
 removes them only after you confirm. A wall is only ever treated as a duplicate
 of another wall with the **exact same blocking properties** (movement, sight,
@@ -73,7 +73,7 @@ terrain/one-way wall into a plain one, and every stretch of walled space is kept
 
 ![The Quick Walls panel](docs/images/panel.png)
 
-**Your guides** — a whole tavern roughed out in one pass, each guide colored by
+**Your guides:** a whole tavern roughed out in one pass, each guide colored by
 what it will become: green freehand strokes trace the outer walls and room
 dividers, magenta boxes ring the tables and couches (as see-through Invisible
 walls, so they block movement but not line of sight), and blue and red lines
@@ -81,9 +81,9 @@ mark the windows and doors.
 
 ![A tavern marked out with colored guide drawings](docs/images/before.webp)
 
-**The result** after one click of Build Walls — solid walls following every
-stroke, a see-through wall around each piece of furniture, and the windows and
-doors cut into place:
+**The result** after one click of Build Walls. Solid walls follow every
+stroke, a see-through wall rings each piece of furniture, and the windows and
+doors are cut into place:
 
 ![Walls built from the guides](docs/images/after.webp)
 
@@ -98,14 +98,14 @@ light**. The guide drawings are cleared afterward.
 > wall where the opening should be.
 
 > **Missed an opening?** You can add a door or window to walls that are
-> **already on the scene** — no rectangle needed. Just draw the door/window line
+> **already on the scene**, no rectangle needed. Just draw the door/window line
 > along the existing wall and click Build; Quick Walls splits the wall and drops
 > the opening in, keeping the wall's other settings. And if you lay a guide
-> over walls that already exist, it **won't duplicate** them — it only fills in
+> over walls that already exist, it **won't duplicate** them. It only fills in
 > the stretches that aren't walled yet.
 
 > **Openings in curves:** draw the door/window line across a freehand or round
-> wall in the same pass and Build once — the opening is cut right into it, just
+> wall in the same pass and Build once. The opening is cut right into it, just
 > like a rectangle. Openings attach best on the straighter stretches of a wall;
 > on a tight curve, draw the line along one segment of the run.
 
@@ -131,7 +131,7 @@ light**. The guide drawings are cleared afterward.
 ### Wall types
 
 The **Wall type** dropdown sets what the walls you draw next become. Each type
-draws in its own guide color, so one build can contain a mix of types — the
+draws in its own guide color, so one build can contain a mix of types. The
 color baked into each stroke decides its type, not whatever the dropdown happens
 to say at Build time.
 
@@ -142,7 +142,7 @@ to say at Build time.
 | **Invisible** | magenta | blocked | passes through | passes through |
 | **Ethereal** | cyan | passes through | blocked | blocked |
 
-(Doors and windows ignore this setting — a door is always a working door, a
+(Doors and windows ignore this setting: a door is always a working door, and a
 window always blocks movement while letting sight and light through.)
 
 ## API
@@ -164,7 +164,7 @@ Quick Walls reads the drawings on the active scene:
 - A **line** on a wall (colored as a door or window) marks an opening. Quick
   Walls leaves a gap in the wall there and inserts a real door or a see-through
   window segment, sized to the line. The line can sit on a guide edge **or on a
-  wall that already exists** — an existing wall is split in place and its other
+  wall that already exists**. An existing wall is split in place and its other
   settings are kept.
 - A **mark** colored as a light becomes an ambient light at that spot.
 - Where a new wall segment lands on a wall that is **already there**, Quick Walls
