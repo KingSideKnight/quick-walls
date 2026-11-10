@@ -1,8 +1,8 @@
 {
   "id": "quick-walls",
   "title": "Quick Walls",
-  "description": "A floating toolbar for fast map walling. Draw rectangles over buildings and quick lines for doors and windows, then one click turns them into proper walls, working doors, and see-through windows. System-agnostic — works with any game system.",
-  "version": "1.0.3",
+  "description": "A floating toolbar for fast map walling. Draw rectangles, ovals, or freehand strokes over buildings and quick lines for doors and windows, then one click turns them into proper walls, working doors, see-through windows, and lights. System-agnostic — works with any game system.",
+  "version": "1.1.0",
   "compatibility": {
     "minimum": "13",
     "verified": "14"
@@ -32,7 +32,7 @@
   ],
   "url": "https://github.com/KingSideKnight/quick-walls",
   "manifest": "https://github.com/KingSideKnight/quick-walls/releases/latest/download/module.json",
-  "download": "https://github.com/KingSideKnight/quick-walls/releases/download/v1.0.3/module.zip",
+  "download": "https://github.com/KingSideKnight/quick-walls/releases/download/v1.1.0/module.zip",
   "readme": "https://github.com/KingSideKnight/quick-walls/blob/main/README.md",
   "bugs": "https://github.com/KingSideKnight/quick-walls/issues",
   "license": "MIT",

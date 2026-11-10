@@ -73,3 +73,24 @@
 #quick-walls-panel button.qw-build:hover {
   background: #2a5a34;
 }
+
+#quick-walls-panel .qw-walltype-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 4px;
+  padding: 0 2px;
+  font-size: 0.8rem;
+  color: #aab8d0;
+}
+
+#quick-walls-panel .qw-walltype {
+  flex: 1;
+  background: #222838;
+  color: #d7e2f2;
+  border: 1px solid #3a4a66;
+  border-radius: 4px;
+  padding: 4px 6px;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
