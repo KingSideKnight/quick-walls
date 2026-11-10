@@ -62,6 +62,21 @@ Hooks.once("init", () => {
     hint: "QUICKWALLS.Settings.WallColor.Hint",
     scope: "client", config: true, type: new foundry.data.fields.ColorField({ initial: "#33cc33" }),
   });
+  game.settings.register(MODULE, "terrainColor", {
+    name: "QUICKWALLS.Settings.TerrainColor.Name",
+    hint: "QUICKWALLS.Settings.TerrainColor.Hint",
+    scope: "client", config: true, type: new foundry.data.fields.ColorField({ initial: "#dddd22" }),
+  });
+  game.settings.register(MODULE, "invisibleColor", {
+    name: "QUICKWALLS.Settings.InvisibleColor.Name",
+    hint: "QUICKWALLS.Settings.InvisibleColor.Hint",
+    scope: "client", config: true, type: new foundry.data.fields.ColorField({ initial: "#cc22cc" }),
+  });
+  game.settings.register(MODULE, "etherealColor", {
+    name: "QUICKWALLS.Settings.EtherealColor.Name",
+    hint: "QUICKWALLS.Settings.EtherealColor.Hint",
+    scope: "client", config: true, type: new foundry.data.fields.ColorField({ initial: "#22cccc" }),
+  });
   game.settings.register(MODULE, "wallSimplify", {
     name: "QUICKWALLS.Settings.WallSimplify.Name",
     hint: "QUICKWALLS.Settings.WallSimplify.Hint",
@@ -109,10 +124,11 @@ export class QuickWalls {
       if (QuickWalls._mode === "door")   doc.updateSource({ strokeColor: game.settings.get(MODULE, "doorColor"),   strokeWidth: 8 });
       if (QuickWalls._mode === "window") doc.updateSource({ strokeColor: game.settings.get(MODULE, "windowColor"), strokeWidth: 8 });
       if (QuickWalls._mode === "light")  doc.updateSource({ strokeColor: game.settings.get(MODULE, "lightColor"),  strokeWidth: 8 });
-      // Wall guides (rectangle, ellipse, freehand) get their own color so the
-      // red door lines stand out against them instead of blending in.
+      // Wall guides (rectangle, ellipse, freehand) are colored by the CURRENTLY
+      // selected wall type, so each stroke carries its own type into Build and
+      // the red/blue/orange opening lines still stand out against them.
       if (QuickWalls._mode === "building" || QuickWalls._mode === "round" || QuickWalls._mode === "wall")
-        doc.updateSource({ strokeColor: game.settings.get(MODULE, "wallColor"), strokeWidth: 8 });
+        doc.updateSource({ strokeColor: QuickWalls._wallTypeColor(QuickWalls._wallType), strokeWidth: 8 });
     });
 
     const el = document.createElement("div");
@@ -135,6 +151,7 @@ export class QuickWalls {
           </select>
         </label>
         <button class="qw-build" title="${game.i18n.localize("QUICKWALLS.BuildHint")}"><i class="fa-solid fa-hammer"></i> ${game.i18n.localize("QUICKWALLS.Build")}</button>
+        <button class="qw-clean" title="${game.i18n.localize("QUICKWALLS.CleanHint")}"><i class="fa-solid fa-broom"></i> ${game.i18n.localize("QUICKWALLS.Clean")}</button>
       </div>`;
     document.body.appendChild(el);
     QuickWalls._el = el;
@@ -145,8 +162,12 @@ export class QuickWalls {
     el.querySelector('[data-mode="door"]').addEventListener("click",     () => QuickWalls._setMode("door", "freehand"));
     el.querySelector('[data-mode="window"]').addEventListener("click",   () => QuickWalls._setMode("window", "freehand"));
     el.querySelector('[data-mode="light"]').addEventListener("click",    () => QuickWalls._setMode("light", "freehand"));
-    el.querySelector(".qw-walltype").addEventListener("change", (e) => { QuickWalls._wallType = e.target.value; });
+    const wtSel = el.querySelector(".qw-walltype");
+    const tintWallType = () => { const col = String(QuickWalls._wallTypeColor(QuickWalls._wallType)); wtSel.style.borderColor = col; wtSel.style.color = col; };
+    wtSel.addEventListener("change", (e) => { QuickWalls._wallType = e.target.value; tintWallType(); });
+    tintWallType();
     el.querySelector(".qw-build").addEventListener("click", () => QuickWalls.build());
+    el.querySelector(".qw-clean").addEventListener("click", () => QuickWalls.cleanUp());
     el.querySelector(".qw-x").addEventListener("click", () => QuickWalls.close());
 
     // drag to move
@@ -227,18 +248,32 @@ export class QuickWalls {
       default:          return { move: NORMAL, sight: NORMAL,  light: NORMAL,  sound: NORMAL, door: 0, ds: 0 };
     }
   }
+  // The guide color that marks each solid wall type as it is drawn.
+  static _wallTypeColor(wt) {
+    switch (wt) {
+      case "terrain":   return game.settings.get(MODULE, "terrainColor");
+      case "invisible": return game.settings.get(MODULE, "invisibleColor");
+      case "ethereal":  return game.settings.get(MODULE, "etherealColor");
+      default:          return game.settings.get(MODULE, "wallColor");
+    }
+  }
+  // Classify a guide by its color: an opening (door/window), a light, or one of
+  // the four solid wall types (normal/terrain/invisible/ethereal), else null.
   static _colorKind(col) {
     if (col == null) return null;
     let s = col; if (typeof s === "object" && s.css) s = s.css;
     const n = (typeof s === "string") ? parseInt(s.replace("#", ""), 16) : Number(s);
     if (Number.isNaN(n)) return null;
     const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
-    const door = game.settings.get(MODULE, "doorColor"), win = game.settings.get(MODULE, "windowColor"), light = game.settings.get(MODULE, "lightColor"), wall = game.settings.get(MODULE, "wallColor");
     const near = (hex) => { const m = Number(typeof hex === "object" ? Number(hex) : parseInt(String(hex).replace("#",""),16)); return Math.abs(((m>>16)&255)-r) + Math.abs(((m>>8)&255)-g) + Math.abs((m&255)-b) < 80; };
-    if (near(door))  return "door";
-    if (near(win))   return "window";
-    if (near(light)) return "light";
-    if (near(wall))  return "wall";
+    const g_ = (k) => game.settings.get(MODULE, k);
+    if (near(g_("doorColor")))      return "door";
+    if (near(g_("windowColor")))    return "window";
+    if (near(g_("lightColor")))     return "light";
+    if (near(g_("wallColor")))      return "normal";
+    if (near(g_("terrainColor")))   return "terrain";
+    if (near(g_("invisibleColor"))) return "invisible";
+    if (near(g_("etherealColor")))  return "ethereal";
     // fallback: dominant channel (orange lights are caught by near() above)
     if (r > g + 40 && r > b + 40) return "door";
     if (b > r + 40 && b > g + 40) return "window";
@@ -324,18 +359,29 @@ export class QuickWalls {
     }
     return pts;
   }
-  // Chain a point list into solid walls of the chosen type, deduped, into `out`.
-  static _solidChain(points, closed, existing, dtol, out) {
-    const props = QuickWalls._solidProps(QuickWalls._wallType);
+  // Chain a point list into walls of the chosen type, cutting any door/window
+  // markers that sit on the run (so openings work on freehand and round walls,
+  // not just rectangles) and deduping solid stretches against existing walls.
+  // Returns the door/window counts it added. Pushes walls into `out`.
+  static _solidChain(points, closed, existing, dtol, markers, tol, wtype, out) {
+    const solid = QuickWalls._solidProps(wtype);
     const edges = [];
-    for (let i = 0; i + 1 < points.length; i++) edges.push([points[i], points[i + 1]]);
-    if (closed && points.length > 2) edges.push([points[points.length - 1], points[0]]);
-    let n = 0;
-    for (const [a, b] of edges)
-      for (const c of QuickWalls._subtractExisting([a[0], a[1], b[0], b[1]], existing, dtol)) {
-        out.push({ c: c.map(Math.round), ...props }); n++;
+    for (let i = 0; i + 1 < points.length; i++)
+      edges.push([points[i][0], points[i][1], points[i + 1][0], points[i + 1][1]]);
+    if (closed && points.length > 2) {
+      const a = points[points.length - 1], b = points[0];
+      edges.push([a[0], a[1], b[0], b[1]]);
+    }
+    let doors = 0, wins = 0;
+    for (const edge of edges)
+      for (const s of QuickWalls._segmentsForEdge(edge, markers, tol)) {
+        const pieces = QuickWalls._subtractExisting(s.c, existing, dtol);
+        if (!pieces.length) continue;
+        if (s.type === "door") doors++; else if (s.type === "window") wins++;
+        const props = s.type === "solid" ? solid : QuickWalls._wallProps(s.type);
+        for (const c of pieces) out.push({ c: c.map(Math.round), ...props });
       }
-    return n;
+    return { doors, wins };
   }
 
   static async build() {
@@ -344,15 +390,18 @@ export class QuickWalls {
     const grid = scene.grid.size || 100, tol = grid * 0.6, dtol = grid * 0.25;
     const drawings = Array.from(scene.drawings);
     const buildings = [], rounds = [], freehandWalls = [], markers = [], lights = [];
+    const SOLID = new Set(["normal", "terrain", "invisible", "ethereal"]);
     for (const d of drawings) {
-      const t = d.shape?.type;
-      if (t === "r") buildings.push({ d, x: d.x, y: d.y, w: d.shape.width, h: d.shape.height });
-      else if (t === "e") rounds.push({ d });
+      const t = d.shape?.type, kind = QuickWalls._colorKind(d.strokeColor);
+      // Rectangles and ellipses are solid buildings; their COLOR picks the wall
+      // type (default normal if it isn't a recognized wall-type color).
+      if (t === "r") buildings.push({ d, x: d.x, y: d.y, w: d.shape.width, h: d.shape.height, wtype: SOLID.has(kind) ? kind : "normal" });
+      else if (t === "e") rounds.push({ d, wtype: SOLID.has(kind) ? kind : "normal" });
       else if ((t === "p" || t === "f") && Array.isArray(d.shape.points) && d.shape.points.length >= 2) {
-        const p = d.shape.points, kind = QuickWalls._colorKind(d.strokeColor);
+        const p = d.shape.points;
         if (kind === "light") lights.push({ c: QuickWalls._drawingCenter(d), id: d.id });
-        else if (kind === "wall") freehandWalls.push({ d });
-        else if (kind && p.length >= 4) markers.push({ p0: [d.x + p[0], d.y + p[1]], p1: [d.x + p[p.length - 2], d.y + p[p.length - 1]], type: kind, id: d.id });
+        else if (SOLID.has(kind)) freehandWalls.push({ d, wtype: kind });
+        else if ((kind === "door" || kind === "window") && p.length >= 4) markers.push({ p0: [d.x + p[0], d.y + p[1]], p1: [d.x + p[p.length - 2], d.y + p[p.length - 1]], type: kind, id: d.id });
       }
     }
     const existing = Array.from(scene.walls);
@@ -375,19 +424,27 @@ export class QuickWalls {
       }
     }
 
-    // Pass 2 — turn each rectangle into four walls, skipping any stretch an
-    // existing wall already covers so overlapping draws don't duplicate.
-    for (const b of buildings) for (const e of QuickWalls._rectEdges(b.x, b.y, b.w, b.h)) for (const s of QuickWalls._segmentsForEdge(e, markers, tol)) {
-      const pieces = QuickWalls._subtractExisting(s.c, existing, dtol);
-      if (!pieces.length) continue;
-      if (s.type === "door") doors++; else if (s.type === "window") wins++;
-      for (const c of pieces) wallsToCreate.push({ c: c.map(Math.round), ...QuickWalls._wallProps(s.type) });
+    // Pass 2 — turn each rectangle into four walls of its own type, skipping any
+    // stretch an existing wall already covers so overlapping draws don't duplicate.
+    for (const b of buildings) {
+      const solid = QuickWalls._solidProps(b.wtype);
+      for (const e of QuickWalls._rectEdges(b.x, b.y, b.w, b.h)) for (const s of QuickWalls._segmentsForEdge(e, markers, tol)) {
+        const pieces = QuickWalls._subtractExisting(s.c, existing, dtol);
+        if (!pieces.length) continue;
+        if (s.type === "door") doors++; else if (s.type === "window") wins++;
+        const props = s.type === "solid" ? solid : QuickWalls._wallProps(s.type);
+        for (const c of pieces) wallsToCreate.push({ c: c.map(Math.round), ...props });
+      }
     }
 
-    // Round buildings — segment each ellipse into a closed ring of walls.
+    // Round buildings — segment each ellipse into a closed ring of walls,
+    // cutting any door/window openings drawn on it.
     for (const r of rounds) {
       const pts = QuickWalls._ellipsePoints(r.d, grid);
-      if (pts.length >= 3) QuickWalls._solidChain(pts, true, existing, dtol, wallsToCreate);
+      if (pts.length >= 3) {
+        const c = QuickWalls._solidChain(pts, true, existing, dtol, markers, tol, r.wtype, wallsToCreate);
+        doors += c.doors; wins += c.wins;
+      }
     }
 
     // Freehand walls — simplify the traced path, then chain it into walls.
@@ -401,7 +458,8 @@ export class QuickWalls {
       if (pts.length < 2) continue;
       const simp = QuickWalls._rdp(pts, simpTol);
       const closed = simp.length > 2 && Math.hypot(simp[0][0] - simp[simp.length - 1][0], simp[0][1] - simp[simp.length - 1][1]) < grid * 0.5;
-      QuickWalls._solidChain(closed ? simp.slice(0, -1) : simp, closed, existing, dtol, wallsToCreate);
+      const c = QuickWalls._solidChain(closed ? simp.slice(0, -1) : simp, closed, existing, dtol, markers, tol, fw.wtype, wallsToCreate);
+      doors += c.doors; wins += c.wins;
     }
 
     // Lights — drop an AmbientLight at each light-colored guide mark.
@@ -453,9 +511,66 @@ export class QuickWalls {
     }
     ui.notifications.info(msg);
   }
+
+  // A wall's blocking signature. Only walls with the SAME signature are ever
+  // treated as duplicates of each other, so cleanup can never collapse a door
+  // into a wall, or a terrain/one-way wall into a plain one.
+  static _wallSig(w) {
+    return [w.move, w.sight, w.light, w.sound, w.door, w.ds, w.dir].join("|");
+  }
+
+  // Scene-wide tidy: delete zero-length walls and walls whose whole span is
+  // already covered by another identical wall. Reuses the same overlap math as
+  // Build's dedup. Nothing is removed until the GM confirms the counts.
+  static async cleanUp() {
+    const scene = canvas.scene;
+    if (!scene) { ui.notifications.error("Quick Walls: no active scene."); return; }
+    const grid = scene.grid.size || 100;
+    const tol = Math.max(2, grid * 0.1); // tight: only near-exact overlaps count as dupes
+    const zeroIds = [], dupIds = [], live = [];
+
+    // 1. zero-length walls (stray clicks, collapsed stubs) — unambiguous junk.
+    for (const w of scene.walls) {
+      const c = w.c;
+      if (!c || c.length < 4) continue;
+      if (Math.hypot(c[2] - c[0], c[3] - c[1]) < 1) zeroIds.push(w.id);
+      else live.push(w);
+    }
+
+    // 2. duplicate/overlapping walls, compared only within identical-signature
+    // groups. A wall is removed only if a KEPT wall (never deleted) fully covers
+    // it, so every stretch of walled space survives.
+    const groups = new Map();
+    for (const w of live) {
+      const sig = QuickWalls._wallSig(w);
+      (groups.get(sig) || groups.set(sig, []).get(sig)).push(w);
+    }
+    for (const group of groups.values()) {
+      const kept = [];
+      for (const w of group) {
+        if (!QuickWalls._subtractExisting(w.c, kept, tol).length) dupIds.push(w.id);
+        else kept.push(w);
+      }
+    }
+
+    const ids = [...new Set([...zeroIds, ...dupIds])];
+    if (!ids.length) { ui.notifications.info(game.i18n.localize("QUICKWALLS.CleanNone")); return; }
+
+    const rows = [];
+    if (zeroIds.length) rows.push(`<li>${zeroIds.length} ${game.i18n.localize("QUICKWALLS.ZeroWalls")}</li>`);
+    if (dupIds.length) rows.push(`<li>${dupIds.length} ${game.i18n.localize("QUICKWALLS.DupWalls")}</li>`);
+    const ok = await Dialog.confirm({
+      title: game.i18n.localize("QUICKWALLS.Title"),
+      content: `<p><b>${scene.name}</b></p><ul>${rows.join("")}</ul><p>${game.i18n.localize("QUICKWALLS.CleanConfirm")}</p>`,
+    });
+    if (!ok) return;
+
+    await scene.deleteEmbeddedDocuments("Wall", ids);
+    ui.notifications.info(game.i18n.format("QUICKWALLS.CleanDone", { n: ids.length }));
+  }
 }
 
 // Expose a tiny API for macros/other modules
 Hooks.once("ready", () => {
-  game.modules.get(MODULE).api = { toggle: () => QuickWalls.toggle(), build: () => QuickWalls.build() };
+  game.modules.get(MODULE).api = { toggle: () => QuickWalls.toggle(), build: () => QuickWalls.build(), cleanUp: () => QuickWalls.cleanUp() };
 });

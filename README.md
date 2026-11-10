@@ -49,13 +49,25 @@ Then enable **Quick Walls** in your world's module settings.
 6. **Window** — drag a short line for each window (auto-colored blue).
 7. **Light** — click a mark where a light should sit (auto-colored orange). Each
    mark becomes an ambient light.
-8. **Wall type** — pick which Foundry wall type the solid walls become (Normal,
-   Terrain, Invisible, or Ethereal).
+8. **Wall type** — pick the Foundry wall type *before* you draw it: Normal,
+   Terrain, Invisible, or Ethereal. Each type has its own guide color, so you
+   can draw some Normal walls, switch the dropdown to Terrain, draw some more,
+   and Build gives each stroke the type it was drawn as. Change the dropdown as
+   often as you like in one session.
 9. **Build Walls** — review the counts, confirm, done.
 
-All the building guides (rectangles, ovals, and freehand strokes) are drawn in
-green, so the red door lines and blue window lines stand out clearly against
-them.
+Every guide is colored by what it is — doors red, windows blue, lights orange,
+and each wall type its own color (Normal green, Terrain yellow, Invisible
+magenta, Ethereal cyan) — so you can see at a glance what each stroke will
+become, and the opening lines always stand out against the walls.
+
+**Clean Up** (the broom button) is a separate, one-click tidy for the whole
+scene — it needs no guides. It finds **zero-length walls** (stray clicks,
+collapsed stubs) and **duplicate/overlapping walls**, shows you the counts, and
+removes them only after you confirm. A wall is only ever treated as a duplicate
+of another wall with the **exact same blocking properties** (movement, sight,
+light, sound, door, direction), so it never collapses a door into a wall or a
+terrain/one-way wall into a plain one, and every stretch of walled space is kept.
 
 **The panel:**
 
@@ -86,9 +98,10 @@ light**. The guide drawings are cleared afterward.
 > over walls that already exist, it **won't duplicate** them — it only fills in
 > the stretches that aren't walled yet.
 
-> **Openings in curves:** build the curved or round wall first, then draw a
-> door/window line across it and Build again. Once the curve is on the scene it
-> counts as an existing wall, so the opening cuts straight into it.
+> **Openings in curves:** draw the door/window line across a freehand or round
+> wall in the same pass and Build once — the opening is cut right into it, just
+> like a rectangle. Openings attach best on the straighter stretches of a wall;
+> on a tight curve, draw the line along one segment of the run.
 
 ## Settings
 
@@ -96,8 +109,11 @@ light**. The guide drawings are cleared afterward.
 | --- | --- | --- |
 | **Door line color** | red | The color used to mark and detect doors. |
 | **Window line color** | blue | The color used to mark and detect windows. |
-| **Wall guide color** | green | The color for building rectangles, ovals, and freehand strokes, so door/window lines stand out against them. |
 | **Light mark color** | orange | The color used to mark and detect lights. |
+| **Normal wall guide color** | green | The guide color for Normal walls. |
+| **Terrain wall guide color** | yellow | The guide color for Terrain walls. |
+| **Invisible wall guide color** | magenta | The guide color for Invisible walls. |
+| **Ethereal wall guide color** | cyan | The guide color for Ethereal walls. |
 | **Delete guide drawings after building** | on | Clear the guides once walls are made. |
 | **Windows block sound** | on | Whether windows muffle sound (like glass). |
 | **Light bright radius** | 10 | Bright-light radius of each placed light, in scene units. |
@@ -108,14 +124,17 @@ light**. The guide drawings are cleared afterward.
 
 ### Wall types
 
-The **Wall type** dropdown sets what the solid building walls become:
+The **Wall type** dropdown sets what the walls you draw next become. Each type
+draws in its own guide color, so one build can contain a mix of types — the
+color baked into each stroke decides its type, not whatever the dropdown happens
+to say at Build time.
 
-| Type | Movement | Sight & Light | Sound |
-| --- | --- | --- | --- |
-| **Normal** | blocked | blocked | blocked |
-| **Terrain** | blocked | limited (one step) | blocked |
-| **Invisible** | blocked | passes through | passes through |
-| **Ethereal** | passes through | blocked | blocked |
+| Type | Guide color | Movement | Sight & Light | Sound |
+| --- | --- | --- | --- | --- |
+| **Normal** | green | blocked | blocked | blocked |
+| **Terrain** | yellow | blocked | limited (one step) | blocked |
+| **Invisible** | magenta | blocked | passes through | passes through |
+| **Ethereal** | cyan | passes through | blocked | blocked |
 
 (Doors and windows ignore this setting — a door is always a working door, a
 window always blocks movement while letting sight and light through.)
@@ -123,8 +142,9 @@ window always blocks movement while letting sight and light through.)
 ## API
 
 ```js
-game.modules.get("quick-walls").api.toggle(); // open/close the panel
-game.modules.get("quick-walls").api.build();  // build walls from the current drawings
+game.modules.get("quick-walls").api.toggle();  // open/close the panel
+game.modules.get("quick-walls").api.build();    // build walls from the current drawings
+game.modules.get("quick-walls").api.cleanUp();  // remove zero-length & duplicate walls
 ```
 
 ## How it works
