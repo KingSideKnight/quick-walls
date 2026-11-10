@@ -73,11 +73,16 @@ terrain/one-way wall into a plain one, and every stretch of walled space is kept
 
 ![The Quick Walls panel](docs/images/panel.png)
 
-**Your guides** — a rectangle for the building, colored lines for the openings:
+**Your guides** — here a whole tavern roughed out in one pass: green freehand
+strokes for the outer walls, magenta ellipses around the tables (drawn as
+Invisible walls, so they block movement but not sight), and red door / blue
+window lines on the exterior.
 
-![A building marked out with guide drawings](docs/images/before.webp)
+![A tavern marked out with colored guide drawings](docs/images/before.webp)
 
-**The result** after Build Walls:
+**The result** after one click of Build Walls — perimeter walls following the
+freehand path, see-through rings around every table, and the doors and windows
+cut in place:
 
 ![Walls built from the guides](docs/images/after.webp)
 
