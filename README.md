@@ -12,7 +12,7 @@ system (D&D 5e, PF2e, Pathfinder, a blank world, anything).
 ![License: MIT](https://img.shields.io/badge/License-MIT-green)
 ![Latest Release](https://img.shields.io/github/v/release/KingSideKnight/quick-walls)
 
-![Walls built with Quick Walls](docs/images/after.webp)
+![A floorplan walled with Quick Walls](docs/images/after.png)
 
 ---
 
@@ -73,18 +73,20 @@ terrain/one-way wall into a plain one, and every stretch of walled space is kept
 
 ![The Quick Walls panel](docs/images/panel.png)
 
-**Your guides** — here a whole tavern roughed out in one pass: green freehand
-strokes for the outer walls, magenta ellipses around the tables (drawn as
-Invisible walls, so they block movement but not sight), and red door / blue
-window lines on the exterior.
+**Your guides** — a room roughed out in one pass, each guide colored by what it
+will become: green strokes for the walls (with an angled, freehand stretch at
+the bottom-left), magenta ellipses for the tables you want as see-through
+Invisible walls, blue for a window, red for the doors, and orange for a light.
 
-![A tavern marked out with colored guide drawings](docs/images/before.webp)
+![A room marked out with colored guide drawings](docs/images/before.png)
 
-**The result** after one click of Build Walls — perimeter walls following the
-freehand path, see-through rings around every table, and the doors and windows
-cut in place:
+**The result** after one click of Build Walls — solid walls that follow every
+stroke, a working door at each red line, a window at the blue line, see-through
+rings around the tables, and an ambient light:
 
-![Walls built from the guides](docs/images/after.webp)
+![Walls built from the guides](docs/images/after.png)
+
+*(These two are illustrative floorplan diagrams, not a specific published map.)*
 
 Each rectangle becomes four walls; each oval becomes a ring; each freehand stroke
 becomes a run of walls along the path. Each door line becomes a **working door**
